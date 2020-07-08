@@ -21,7 +21,7 @@ app.use(express.json());
 const PORT = 5000;
 
 app.get("/", (req, res) => {
-  res.json({ message: "Hwllo world" });
+  res.json({ message: "Meower 😽😽" });
 });
 app.get("/mews", (req, res) => {
   mews.find().then((mews) => {
@@ -52,18 +52,18 @@ app.post("/mews", (req, res) => {
       content: filter.clean(req.body.content.toString()),
       created: new Date(),
     };
-    mews
-      .insert(mew)
-      .then((createdMew) => {
-        res.json(createdMew);
-      })
-      .catch((err) => {
-        res.json(err);
-      });
+    mews.insert(mew).then((createdMew) => {
+      res.json(createdMew);
+    });
   } else {
     res.status(422);
     res.json({ message: "Hey! Name and content are required" });
   }
+});
+
+app.use((error, req, res, next) => {
+  res.status(500);
+  res.json({ message: error.message });
 });
 
 app.listen(PORT, () => {
