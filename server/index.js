@@ -2,15 +2,18 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const monk = require("monk");
+const Filter = require("bad-words");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 
-const db = monk(process.env.API_URL);
+const db = monk(process.env.MONGODB_URI || `localhost/meower`);
 db.then(() => {
   console.log("server connected");
 });
 
 const mews = db.get("mews");
+const filter = new Filter();
 
 app.use(cors());
 app.use(express.json());
@@ -19,6 +22,11 @@ const PORT = 5000;
 
 app.get("/", (req, res) => {
   res.json({ message: "Hwllo world" });
+});
+app.get("/mews", (req, res) => {
+  mews.find().then((mews) => {
+    res.json(mews);
+  });
 });
 
 function isValidMew(mew) {
@@ -30,11 +38,18 @@ function isValidMew(mew) {
   );
 }
 
+const limiter = rateLimit({
+  windowMs: 20 * 1000, // 30 seconds
+  max: 1, // limit each IP to 100 requests per windowMs
+});
+
+app.use(limiter);
+
 app.post("/mews", (req, res) => {
   if (isValidMew(req.body)) {
     const mew = {
-      name: req.body.name.toString(),
-      content: req.body.content.toString(),
+      name: filter.clean(req.body.name.toString()),
+      content: filter.clean(req.body.content.toString()),
       created: new Date(),
     };
     mews
@@ -49,12 +64,6 @@ app.post("/mews", (req, res) => {
     res.status(422);
     res.json({ message: "Hey! Name and content are required" });
   }
-});
-
-app.get("/mews", (req, res) => {
-  mews.find().then((mews) => {
-    res.json(mews);
-  });
 });
 
 app.listen(PORT, () => {
