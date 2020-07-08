@@ -13,7 +13,10 @@ form.addEventListener("submit", (event) => {
   const name = formData.get("name");
   const content = formData.get("content");
 
-  const mew = {};
+  const mew = {
+    name,
+    content,
+  };
   form.style.display = "none";
   loadingElement.style.display = "";
 
@@ -26,14 +29,15 @@ form.addEventListener("submit", (event) => {
   })
     .then((response) => response.json())
     .then((createdMew) => {
-      console.log(createdMew);
+      form.reset();
       form.style.display = "";
+      listAllMews();
       loadingElement.style.display = "none";
     });
-    // form.reset();
 });
 
 function listAllMews() {
+  mewsElement.innerHTML = "";
   fetch(API_URL)
     .then((response) => response.json())
     .then((mews) => {
