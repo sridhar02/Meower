@@ -1,4 +1,4 @@
-# Meower - Twitter for Cats
+# Meower 😽😽 - Twitter for Cats
 
 ## A basic twitter clone built to demonstrate the full stack pancakes (client, server, database).
 
